@@ -130,7 +130,7 @@ if st.button("Calculate Results"):
                 "X_Value": "Elapsed Time (s)",
                 "1-Load Cell (Formula Result)": "Load Cell (kg)",
                 "2-T_MFM (Formula Result)": "T_MFM",
-                "3-T_bottom (Arith. Mean)": "T_Botton (°C)",
+                "3-T_bottom (Arith. Mean)": "T_Bottom (°C)",
                 "4-T_middle (Arith. Mean)": "T_Flue (°C)",
                 "5-T_top (Arith. Mean)": "T_Top (°C)",
                 "6-T_ambient (Arith. Mean)": "T_Ambient (°C)",
