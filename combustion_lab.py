@@ -165,14 +165,29 @@ if st.button("Calculate & Save Results"):
             filename = f"{base_name}-run{run_number}.csv"
             save_path = os.path.join("data", filename)
 
-            # Saving
-            df.to_csv(save_path, index=False)
+            # === Generate file name based on current time ===
+            timestamp = int(time.time())
+            date_str = date.strftime("%d%m%Y")
+            filename = f"{date_str}-{fuel_type_label}-{appliance.replace(' ', '_')}-run{timestamp}.csv"
 
-            # Showing Results
-            st.success(f"✅ Data calculated and saved as {filename}")
+            # === Show success message and key results ===
+            st.success(f"✅ Data processed and ready to download: `{filename}`")
             st.write(f"**Total Energy Loaded:** {total_energy:.3f} MJ")
             st.write(f"**PM Emission Factor:** {pm_ef:.6f} g/MJ")
             st.dataframe(df.head())
+
+            # === Create in-memory CSV ===
+            csv_buffer = StringIO()
+            df.to_csv(csv_buffer, index=False)
+            csv_buffer.seek(0)
+
+            # === Add download button ===
+            st.download_button(
+                label="⬇️ Download Results CSV",
+                data=csv_buffer,
+                file_name=filename,
+                mime="text/csv"
+            )
 
     except Exception as e:
         st.error(f"Error during calculation: {e}")
@@ -198,10 +213,9 @@ uploaded_files = st.file_uploader(
 
 if uploaded_files:
     if viz_type == "Error bar chart (95% CI)":
-        st.markdown("#### Select a metric (must be one consistent value per file)")
 
         allowed_metrics = ["PM EF (g/MJ)", "Total Energy (MJ)", "Average mdot fuel (kg/s)"]
-        selected_metric = st.selectbox("Metric", allowed_metrics)
+        selected_metric = st.selectbox("Select a metric", allowed_metrics)
 
         metric_data = []
 
@@ -320,3 +334,4 @@ if uploaded_files:
             st.warning("No valid data loaded from files.")
 else:
     st.info("Please upload one or more CSV files to visualize.")
+
