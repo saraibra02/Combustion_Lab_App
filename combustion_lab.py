@@ -68,6 +68,8 @@ with col6:
     appliance = st.selectbox("Choose appliance", ["open fireplace", "closed stove"])
 with col7:
     date = st.date_input("Date", value=datetime.date.today())
+    
+
 
 # == Upload Raw Data ==
 st.markdown("##### Upload Raw Data 📂")
@@ -76,7 +78,7 @@ raw_file = st.file_uploader("Please upload raw data file", type=["xlsx", "xls", 
 # (Calculations)
 
 # Calculations Button
-if st.button("Calculate & Save Results"):
+if st.button("Calculate Results"):
     try:
         # Fuel LHV Properties Table 
         LHV = {
@@ -153,41 +155,28 @@ if st.button("Calculate & Save Results"):
                 st.warning(f"⚠️ Couldn't calculate mdot fuel: {mdot_error}")
 
 
-            # Adding Run Number to File Name
-            os.makedirs("data", exist_ok=True)
-            date_str = date.strftime("%d%m%Y")
-            base_name = f"{date_str}-{fuel_type_label.lower()}-{appliance.replace(' ', '_').lower()}"
-            existing_runs = [
-                f for f in os.listdir("data")
-                if f.startswith(base_name) and f.endswith(".csv")
-            ]
-            run_number = len(existing_runs) + 1
-            filename = f"{base_name}-run{run_number}.csv"
-            save_path = os.path.join("data", filename)
+            # Construct filename using user-provided run number
+            filename = f"{date.strftime('%d%m%Y')}-{fuel_type_label}-{appliance.replace(' ', '_')}.csv"
 
-            # === Generate file name based on current time ===
-            timestamp = int(time.time())
-            date_str = date.strftime("%d%m%Y")
-            filename = f"{date_str}-{fuel_type_label}-{appliance.replace(' ', '_')}-run{timestamp}.csv"
+            # Convert DataFrame to CSV bytes
+            csv_bytes = df.to_csv(index=False).encode("utf-8")
 
-            # === Show success message and key results ===
-            st.success(f"✅ Data processed and ready to download: `{filename}`")
+            # Showing Results
+            st.divider()
+            st.markdown("##### Results Preview 🔍")
             st.write(f"**Total Energy Loaded:** {total_energy:.3f} MJ")
             st.write(f"**PM Emission Factor:** {pm_ef:.6f} g/MJ")
             st.dataframe(df.head())
-
-            # === Create in-memory CSV ===
-            csv_buffer = StringIO()
-            df.to_csv(csv_buffer, index=False)
-            csv_buffer.seek(0)
-
-            # === Add download button ===
+            st.success(f"✅ Data calculated. Please download file below.")
+             # Add download button
             st.download_button(
-                label="⬇️ Download Results CSV",
-                data=csv_buffer,
+                label="📥Download Results",
+                data=csv_bytes,
                 file_name=filename,
                 mime="text/csv"
             )
+
+           
 
     except Exception as e:
         st.error(f"Error during calculation: {e}")
@@ -215,7 +204,7 @@ if uploaded_files:
     if viz_type == "Error bar chart (95% CI)":
 
         allowed_metrics = ["PM EF (g/MJ)", "Total Energy (MJ)", "Average mdot fuel (kg/s)"]
-        selected_metric = st.selectbox("Select a metric", allowed_metrics)
+        selected_metric = st.selectbox("Please select a metric", allowed_metrics)
 
         metric_data = []
 
